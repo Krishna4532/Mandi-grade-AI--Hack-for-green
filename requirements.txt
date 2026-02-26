@@ -1,0 +1,8 @@
+pathway[all]
+docling
+python-dotenv
+pandas
+qrcode
+pillow
+litellm
+google-generativeai

@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Mandi Grade AI | Professional Portal</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(rgba(0,0,0,0.75), rgba(0,0,0,0.75)), 
+                        url('https://images.unsplash.com/photo-1523348837708-15d4a09cfac2?auto=format&fit=crop&q=80&w=1920');
+            background-size: cover; background-attachment: fixed;
+            color: white; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            height: 100vh; display: flex; align-items: center;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 25px;
+            padding: 40px; box-shadow: 0 25px 50px rgba(0,0,0,0.6);
+        }
+        .report-card {
+            display: none; background: #ffffff; color: #1a1a1a; border-radius: 15px;
+            padding: 30px; border-top: 10px solid #27ae60; animation: slideUp 0.6s ease-out;
+        }
+        @keyframes slideUp { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        
+        .btn-analyze {
+            background: #27ae60; color: white; border: none; padding: 15px;
+            border-radius: 12px; font-weight: bold; width: 100%; transition: 0.3s;
+        }
+        .btn-analyze:hover { background: #2ecc71; transform: translateY(-2px); }
+        
+        .scanner-line {
+            width: 100%; height: 3px; background: #27ae60; position: absolute;
+            top: 0; display: none; box-shadow: 0 0 15px #27ae60;
+            animation: scanMove 2s infinite linear;
+        }
+        @keyframes scanMove { 0% { top: 0; } 100% { top: 100%; } }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-11 glass-card">
+                <div class="row align-items-center">
+                    <div class="col-md-5 border-end border-secondary pe-md-5">
+                        <h2 class="fw-bold mb-2">🌾 Mandi Grade <span style="color:#27ae60">AI</span></h2>
+                        <p class="text-white-50 mb-4">Precision Agricultural Quality Assessment</p>
+                        
+                        <div class="position-relative overflow-hidden p-4 rounded-4 bg-dark border border-secondary text-center">
+                            <div id="laser" class="scanner-line"></div>
+                            <img src="https://cdn-icons-png.flaticon.com/512/3067/3067451.png" width="60" class="mb-3 opacity-50">
+                            <input type="file" id="cropImage" class="form-control bg-transparent text-white border-secondary mb-3">
+                            <button onclick="startScan()" class="btn btn-analyze">GENERATE QUALITY REPORT</button>
+                        </div>
+                    </div>
+
+                    <div class="col-md-7 ps-md-5">
+                        <div id="placeholder" class="text-center py-5">
+                            <h4 class="text-white-50">System Ready</h4>
+                            <p class="small text-muted">Upload crop imagery to begin grading</p>
+                        </div>
+
+                        <div id="loader" class="text-center py-5" style="display:none;">
+                            <div class="spinner-border text-success mb-3"></div>
+                            <h5>AI Analyzing Grain Samples...</h5>
+                        </div>
+
+                        <div id="resultCard" class="report-card">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h5 class="fw-bold m-0">OFFICIAL QUALITY REPORT</h5>
+                                <span class="badge bg-success">AI VERIFIED</span>
+                            </div>
+                            <div class="row g-3">
+                                <div class="col-6">
+                                    <label class="text-muted small d-block">COMMODITY</label>
+                                    <span class="fw-bold" id="res-comm">--</span>
+                                </div>
+                                <div class="col-6 text-end">
+                                    <label class="text-muted small d-block">LOCATION</label>
+                                    <span class="fw-bold" id="res-loc">--</span>
+                                </div>
+                                <div class="col-6">
+                                    <label class="text-muted small d-block">DETECTED GRADE</label>
+                                    <h3 class="text-success fw-bold m-0" id="res-grade">--</h3>
+                                </div>
+                                <div class="col-6 text-end">
+                                    <label class="text-muted small d-block">MARKET VALUATION</label>
+                                    <h3 class="fw-bold m-0" id="res-price">₹0.00</h3>
+                                </div>
+                                <div class="col-12">
+                                    <div class="p-3 bg-light border-start border-4 border-success rounded">
+                                        <h6 class="fw-bold small">QUALITY DIAGNOSIS:</h6>
+                                        <p class="small mb-0" id="res-msg"></p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function startScan() {
+            if(!document.getElementById('cropImage').files[0]) return alert("Please select an image!");
+
+            document.getElementById('laser').style.display = 'block';
+            document.getElementById('placeholder').style.display = 'none';
+            document.getElementById('resultCard').style.display = 'none';
+            document.getElementById('loader').style.display = 'block';
+
+            // Simulate the 3-second processing wait
+            setTimeout(async () => {
+                const res = await fetch('/get_results');
+                const data = await res.json();
+                
+                document.getElementById('laser').style.display = 'none';
+                document.getElementById('loader').style.display = 'none';
+                document.getElementById('resultCard').style.display = 'block';
+                
+                document.getElementById('res-comm').innerText = data.commodity;
+                document.getElementById('res-loc').innerText = data.location;
+                document.getElementById('res-grade').innerText = data.assigned_grade;
+                document.getElementById('res-price').innerText = `₹ ${data.fair_price} / qtl`;
+                document.getElementById('res-msg').innerText = data.analysis;
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
